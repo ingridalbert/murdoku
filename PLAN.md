@@ -14,7 +14,8 @@ Arranque de la app: `python3 -m http.server 8000` y abrir http://localhost:8000.
 ## Antes de la Fase 1
 
 - [x] La carpeta es un repositorio git conectado a `ingridalbert/murdoku`.
-- [ ] Ingrid da la lista de apodos (al menos 9) con su género, y sus amigos están de acuerdo.
+- [x] Ingrid da la lista de apodos (13) con su género. Está en `docs/project-info.md`.
+- [ ] Los amigos están de acuerdo en salir en un repo público (lo confirma Ingrid).
 
 ## Fase 1 · Preparar el proyecto y ver el caso 1
 

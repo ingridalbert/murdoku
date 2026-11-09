@@ -44,6 +44,10 @@ La dificultad de un caso depende del tamaño del plano y de la mezcla de pistas.
 ## Personajes
 Los personajes son amigos de Ingrid, identificados **solo por su apodo**, con su género gramatical. Sin apellidos, fotos ni otros datos que permitan reconocerlos fuera del grupo. El repositorio es público: Ingrid da la lista de apodos y se asegura de que sus amigos están de acuerdo, porque alguno saldrá como asesino o víctima. Los apodos se reutilizan entre casos.
 
+- **Mujeres:** Ingrid, Lola, Paloma, Helena, Lucia, Luza, Naomi, Karol, Zoryana, Anna, Berta.
+- **Hombres:** Carles, Carlos.
+- Carles y Carlos se parecen mucho: no coinciden en el mismo caso.
+
 ## Cómo se crean los casos
 Los escribe el agente (Claude) como módulos de datos dentro del repositorio: plano, objetos, personas, pistas y solución. Un resolvedor comprueba que cada caso tiene exactamente una solución y que esta coincide con la guardada. Piloto: 9 casos, uno de prueba de 5×5 y dos de cada tamaño de 6×6 a 9×9. Si gustan, se pide al agente: «genera 2 casos nuevos de 7×7». Si un caso no pasa el validador, no entra.
 
