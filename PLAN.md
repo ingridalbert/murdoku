@@ -2,7 +2,7 @@
 
 El agente trabaja una fase cada vez y marca las casillas al cerrarla. Cada fase termina con algo que se ve al abrir la app.
 
-Arranque de la app: `python3 -m http.server 8000` y abrir http://localhost:8000. Las reglas del juego y el catálogo de pistas están en `docs/project-info.md`.
+Arranque de la app: `npm start` desde la carpeta del proyecto y abrir http://127.0.0.1:8000. Las reglas del juego y el catálogo de pistas están en `docs/project-info.md`.
 
 ## Límites conocidos
 
@@ -22,20 +22,20 @@ Arranque de la app: `python3 -m http.server 8000` y abrir http://localhost:8000.
 **Objetivo:** abrir la app y ver el plano del caso 1 con sus pistas, todavía sin poder jugar. Menos de una hora.
 
 **Tareas:**
-- [ ] `package.json` con `"type": "module"` y scripts `test` (`node --test`), `test:e2e` (`playwright test`) y `lint` (`eslint .`).
-- [ ] Instalar `@playwright/test` (y sus navegadores) y ESLint. Configurar `playwright.config.js` con `webServer` que arranca `python3 -m http.server 8000`.
-- [ ] Quitar `GEMINI_API_KEY` de `.env.example`.
-- [ ] Formato del caso como módulo JS (`export default {...}`), con `id`, `version`, habitaciones y objetos con su artículo, objetos bloqueantes u ocupables, personajes (apodo y género), pistas estructuradas y solución.
-- [ ] Generador de texto de las pistas a partir de su estructura (los 8 tipos).
-- [ ] Caso 1 (5×5, de prueba), con apodos de la lista que da Ingrid.
-- [ ] `index.html`, estilos y módulo que dibuja el plano: habitaciones en colores, paredes marcadas, objetos y lista de pistas.
+- [x] `package.json` con `"type": "module"` y scripts `test` (`node --test`), `test:e2e` (`playwright test`) y `lint` (`eslint .`).
+- [x] Instalar `@playwright/test` (y sus navegadores) y ESLint. Configurar `playwright.config.js` con `webServer` que arranca `python3 -m http.server 8000 --bind 127.0.0.1`.
+- [x] Quitar `GEMINI_API_KEY` de `.env.example`.
+- [x] Formato del caso como módulo JS (`export default {...}`), con `id`, `version`, habitaciones y objetos con su artículo, objetos bloqueantes u ocupables, personajes (apodo y género), pistas estructuradas y solución.
+- [x] Generador de texto de las pistas a partir de su estructura (los 8 tipos).
+- [x] Caso 1 (5×5, de prueba), con apodos de la lista que da Ingrid.
+- [x] `index.html`, estilos y módulo que dibuja el plano: habitaciones en colores, paredes marcadas, objetos y lista de pistas.
 
 **Pruebas:**
 - Unitarias: el caso 1 está bien formado (5×5, cada casilla con su habitación, 5 personas, víctima sin pistas) y cada tipo de pista genera el texto esperado, en masculino y en femenino.
 - E2E: la página muestra «Murdoku», 25 casillas y la lista de pistas.
 - `npm run lint` sin avisos.
 
-**Hecho cuando:** al abrir http://localhost:8000 se ven el plano y las pistas del caso 1, y las tres órdenes pasan.
+**Hecho cuando:** al abrir http://127.0.0.1:8000 se ven el plano y las pistas del caso 1, y las tres órdenes pasan.
 
 ## Fase 2 · Jugar el caso 1
 

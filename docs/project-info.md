@@ -69,7 +69,7 @@ Los escribe el agente (Claude) como módulos de datos dentro del repositorio: pl
 - Claves: ninguna.
 
 ## Cómo se arranca
-`python3 -m http.server 8000` en la carpeta del proyecto, y abrir http://localhost:8000. Hace falta un servidor local porque los módulos ES no cargan con doble clic.
+Desde la carpeta del proyecto: `npm start` (equivale a `python3 -m http.server 8000 --bind 127.0.0.1`) y abrir http://127.0.0.1:8000. Hace falta un servidor local porque los módulos ES no cargan con doble clic. El servidor solo escucha en este ordenador (`--bind 127.0.0.1`) y debe arrancarse **en la carpeta del proyecto**: si no, sirve otra carpeta, y sin `--bind` cualquiera en la misma wifi podría verla.
 
 ## Cómo se prueba
 - `npm test` (lógica), `npm run test:e2e` (navegador) y `npm run lint`.
