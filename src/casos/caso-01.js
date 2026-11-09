@@ -7,16 +7,18 @@
 // fila 3     D  D  J  J  J
 // fila 4     D  D  J  J  J
 
+import { personajes } from './personajes.js';
+
 export default {
   id: 'caso-01',
   version: 1,
   titulo: 'Cena con sorpresa',
   plano: ['CCSSS', 'CCSSS', 'DDSJJ', 'DDJJJ', 'DDJJJ'],
   habitaciones: {
-    C: { nombre: 'cocina', articulo: 'la' },
-    S: { nombre: 'salón', articulo: 'el' },
-    D: { nombre: 'dormitorio', articulo: 'el' },
-    J: { nombre: 'jardín', articulo: 'el' },
+    C: { nombre: 'cocina', articulo: 'la', suelo: 'baldosa' },
+    S: { nombre: 'salón', articulo: 'el', suelo: 'madera' },
+    D: { nombre: 'dormitorio', articulo: 'el', suelo: 'moqueta' },
+    J: { nombre: 'jardín', articulo: 'el', suelo: 'cesped' },
   },
   objetos: [
     { tipo: 'silla', fila: 0, columna: 0 },
@@ -27,13 +29,7 @@ export default {
     { tipo: 'estanteria', fila: 4, columna: 1 },
     { tipo: 'planta', fila: 2, columna: 4 },
   ],
-  personajes: [
-    { id: 'lola', nombre: 'Lola', genero: 'f' },
-    { id: 'paloma', nombre: 'Paloma', genero: 'f' },
-    { id: 'carles', nombre: 'Carles', genero: 'm' },
-    { id: 'naomi', nombre: 'Naomi', genero: 'f' },
-    { id: 'berta', nombre: 'Berta', genero: 'f' },
-  ],
+  personajes: personajes('lola', 'paloma', 'carles', 'naomi', 'berta'),
   victima: 'berta',
   pistas: [
     { persona: 'lola', tipo: 'sobre-objeto', objeto: 'silla' },
@@ -41,6 +37,7 @@ export default {
     { persona: 'carles', tipo: 'en-habitacion', habitacion: 'D' },
     { persona: 'naomi', tipo: 'junto-a-objeto', objeto: 'planta' },
   ],
+  generales: [],
   solucion: {
     lola: [0, 0],
     paloma: [1, 3],

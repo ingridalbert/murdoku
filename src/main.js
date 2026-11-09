@@ -13,5 +13,6 @@ if (errores.length > 0) {
   aviso.textContent = `El caso «${caso.id}» tiene errores: ${errores.map((e) => e.detalle).join(' ')}`;
   juego.append(aviso);
 } else {
+  document.documentElement.style.setProperty('--n', caso.plano.length);
   juego.append(crearPlano(caso), crearPanel(caso));
 }

@@ -1,72 +1,288 @@
+/* ===== Paleta y medidas ===== */
 :root {
-  --fondo: #f6f1e7;
-  --tinta: #2b2622;
-  --suave: #6b625a;
-  --pared: #2b2622;
-  --linea: #c9bfb2;
-  --acento: #9b2c2c;
-  --casilla: clamp(2.6rem, 14vw, 4.5rem);
+  --fondo: #fff4e6;
+  --fondo-2: #ffe8f0;
+  --tinta: #2b2140;
+  --suave: #6b5b7b;
+  --pared: #2b2140;
+  --tarjeta: #ffffff;
+  --acento: #ff5d8f;
+  --acento-2: #7c5cff;
+  --sombra: 4px 4px 0 var(--tinta);
+  --radio: 18px;
+  --letra-titulo: 'Fredoka', 'Arial Rounded MT Bold', system-ui, sans-serif;
+  --letra-texto: 'Nunito', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --n: 5;
+  --casilla: min(calc((100vw - 3rem) / var(--n)), calc((100vh - 9rem) / var(--n)), 6rem);
+}
+
+@media (min-width: 900px) {
+  :root {
+    --casilla: min(calc((100vw - 30rem) / var(--n)), calc((100vh - 8rem) / var(--n)), 6.5rem);
+  }
 }
 
 * { box-sizing: border-box; }
 
 body {
   margin: 0;
-  padding: 1rem;
-  background: var(--fondo);
+  min-height: 100vh;
   color: var(--tinta);
-  font-family: Georgia, 'Times New Roman', serif;
+  font-family: var(--letra-texto);
+  background:
+    radial-gradient(circle at 10% 10%, #ffd16655 0 12rem, transparent 12rem),
+    radial-gradient(circle at 90% 85%, #7c5cff33 0 16rem, transparent 16rem),
+    linear-gradient(160deg, var(--fondo), var(--fondo-2));
+  background-attachment: fixed;
 }
 
-header { text-align: center; margin-bottom: 1rem; }
-h1 { margin: 0; font-size: 2.4rem; letter-spacing: 0.05em; }
-h2 { font-size: 1.3rem; margin: 0 0 0.75rem; }
-h3 { font-size: 1rem; margin: 1rem 0 0.5rem; }
-.subtitulo { margin: 0.25rem 0 0; color: var(--suave); }
+/* ===== Cabecera y logo ===== */
+.cabecera { text-align: center; padding: 1rem 1rem 0.25rem; }
 
-#juego {
+.logo {
+  margin: 0;
+  font-family: var(--letra-titulo);
+  font-weight: 700;
+  font-size: clamp(2.4rem, 8vw, 3.6rem);
+  letter-spacing: 0.02em;
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
+}
+.logo span:not(.lupa) {
+  display: inline-block;
+  -webkit-text-stroke: 2px var(--tinta);
+  paint-order: stroke fill;
+  text-shadow: 3px 3px 0 var(--tinta);
+}
+.logo .l1 { color: #ff5d8f; transform: rotate(-6deg); }
+.logo .l2 { color: #ffc93c; transform: rotate(4deg); }
+.logo .l3 { color: #06d6a0; transform: rotate(-3deg); }
+.logo .l4 { color: #3a86ff; transform: rotate(5deg); }
+.logo .l5 { color: #c77dff; transform: rotate(-4deg); }
+.logo .l6 { color: #ff8c42; transform: rotate(6deg); }
+
+/* La «o» es una lupa */
+.logo .lupa {
+  position: relative;
+  width: 0.62em;
+  height: 0.62em;
+  margin: 0 0.12em 0 0.04em;
+  border: 0.1em solid var(--tinta);
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #ffffff 0 18%, #bde0fe 19%);
+  box-shadow: 3px 3px 0 var(--tinta);
+  /* La letra «o» está dentro (para lectores de pantalla y para copiar), pero no se ve. */
+  color: transparent;
+  overflow: hidden;
+  line-height: 0;
+}
+.logo .lupa::after {
+  content: '';
+  position: absolute;
+  width: 0.12em;
+  height: 0.32em;
+  background: var(--tinta);
+  border-radius: 0.06em;
+  right: -0.2em;
+  bottom: -0.3em;
+  transform: rotate(-45deg);
+}
+
+.lema { margin: 0.35rem 0 0; color: var(--suave); font-weight: 600; }
+
+/* ===== Maquetación ===== */
+.juego {
   display: flex;
-  flex-wrap: wrap;
-  gap: 1.5rem;
-  justify-content: center;
-  align-items: flex-start;
-  max-width: 60rem;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 1rem;
+  max-width: 80rem;
   margin: 0 auto;
 }
 
-.plano {
+@media (min-width: 900px) {
+  .juego {
+    flex-direction: row-reverse;
+    align-items: flex-start;
+    justify-content: center;
+  }
+}
+
+/* ===== Tablero ===== */
+.tablero {
+  position: relative;
   display: grid;
-  border: 3px solid var(--pared);
+  grid-template-columns: repeat(var(--n), var(--casilla));
+  grid-template-rows: repeat(var(--n), var(--casilla));
+  border: 6px solid var(--pared);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 8px 8px 0 var(--tinta);
   background: var(--pared);
+  flex-shrink: 0;
 }
 
 .casilla {
-  width: var(--casilla);
-  height: var(--casilla);
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: calc(var(--casilla) * 0.5);
-  border: 1px solid var(--linea);
+  border: 1px solid #2b214026;
 }
-
 .casilla.pared-arriba { border-top: 3px solid var(--pared); }
 .casilla.pared-abajo { border-bottom: 3px solid var(--pared); }
 .casilla.pared-izquierda { border-left: 3px solid var(--pared); }
 .casilla.pared-derecha { border-right: 3px solid var(--pared); }
 
-.panel { min-width: 16rem; max-width: 24rem; }
-.panel ul { margin: 0; padding-left: 1.2rem; }
-.panel li { margin-bottom: 0.35rem; }
-
-.leyenda { list-style: none; padding: 0 !important; }
-.leyenda li { display: flex; align-items: center; gap: 0.5rem; }
-.muestra {
-  width: 1rem;
-  height: 1rem;
-  border: 1px solid var(--pared);
-  display: inline-block;
+.casilla svg {
+  width: 82%;
+  height: 82%;
+  filter: drop-shadow(2px 3px 0 #2b214055);
 }
 
-.victima { color: var(--acento); font-weight: bold; }
-.error { color: var(--acento); }
+/* Suelos: texturas solo con CSS */
+.suelo-madera {
+  background:
+    repeating-linear-gradient(90deg, #00000014 0 2px, transparent 2px 33%),
+    repeating-linear-gradient(0deg, transparent 0 46%, #00000010 46% 50%),
+    #f6c28b;
+}
+.suelo-baldosa {
+  background:
+    conic-gradient(#ffffff 25%, #bde0fe 0 50%, #ffffff 0 75%, #bde0fe 0) 0 0 / 50% 50%;
+}
+.suelo-cesped {
+  background:
+    radial-gradient(circle at 20% 30%, #ffffff33 0 6%, transparent 7%),
+    radial-gradient(circle at 70% 70%, #ffffff2b 0 5%, transparent 6%),
+    radial-gradient(circle at 60% 20%, #2d6a4f33 0 5%, transparent 6%),
+    #95d5b2;
+}
+.suelo-moqueta {
+  background:
+    radial-gradient(#ffffff55 1.5px, transparent 2px) 0 0 / 14px 14px,
+    #f7aef8;
+}
+.suelo-piedra {
+  background:
+    radial-gradient(ellipse at 25% 30%, #ffffff40 0 18%, transparent 19%),
+    radial-gradient(ellipse at 75% 70%, #00000014 0 20%, transparent 21%),
+    #cdb4db;
+}
+
+/* Nombre de la habitación dentro del plano */
+.etiqueta-habitacion {
+  align-self: end;
+  justify-self: center;
+  margin-bottom: 0.2rem;
+  pointer-events: none;
+  z-index: 2;
+  font-family: var(--letra-titulo);
+  font-weight: 700;
+  font-size: calc(var(--casilla) * 0.26);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #ffffff;
+  -webkit-text-stroke: 4px var(--tinta);
+  paint-order: stroke fill;
+  white-space: nowrap;
+}
+
+/* ===== Panel ===== */
+.panel {
+  width: 100%;
+  max-width: 26rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.titulo-caso {
+  margin: 0;
+  font-family: var(--letra-titulo);
+  font-weight: 600;
+  font-size: 1.6rem;
+}
+.titulo-caso .tamano { color: var(--suave); font-size: 1rem; margin-left: 0.4rem; }
+
+.seccion h3 {
+  margin: 0 0 0.5rem;
+  font-family: var(--letra-titulo);
+  font-weight: 600;
+  font-size: 1.05rem;
+  color: var(--acento-2);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.pistas-generales { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.5rem; }
+.pistas-generales li {
+  background: var(--tarjeta);
+  border: 3px solid var(--tinta);
+  border-left: 10px solid var(--acento);
+  border-radius: 12px;
+  padding: 0.55rem 0.8rem;
+  box-shadow: var(--sombra);
+  font-weight: 600;
+}
+
+.tarjetas {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(7.5rem, 1fr));
+  gap: 0.9rem;
+}
+
+.tarjeta {
+  background: var(--tarjeta);
+  border: 3px solid var(--tinta);
+  border-radius: var(--radio);
+  box-shadow: var(--sombra);
+  padding: 0.7rem 0.6rem 0.8rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  text-align: center;
+}
+
+.circulo {
+  width: 4.6rem;
+  height: 4.6rem;
+  border-radius: 50%;
+  border: 3px solid var(--tinta);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--letra-titulo);
+  font-weight: 700;
+  font-size: 0.95rem;
+  box-shadow: inset -4px -4px 0 #00000022;
+  overflow-wrap: anywhere;
+  padding: 0.2rem;
+}
+
+.pista { margin: 0; font-size: 0.92rem; line-height: 1.25; }
+.pista strong { font-weight: 800; }
+
+.tarjeta.victima {
+  background: var(--tinta);
+  color: #ffffff;
+}
+.tarjeta.victima .circulo { border-color: #ffffff; }
+.tarjeta.victima .rotulo {
+  font-family: var(--letra-titulo);
+  font-weight: 700;
+  color: var(--acento);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.85rem;
+}
+
+.error {
+  background: #ffe3e3;
+  border: 3px solid #c92a2a;
+  border-radius: 12px;
+  padding: 1rem;
+}

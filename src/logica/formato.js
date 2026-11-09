@@ -3,7 +3,10 @@
 import {
   OBJETOS,
   TIPOS_DE_PISTA,
+  TIPOS_CON_OTRA,
+  TIPOS_GENERALES,
   DIRECCIONES,
+  SUELOS,
   TAMANO_MINIMO,
   TAMANO_MAXIMO,
 } from './objetos.js';
@@ -34,6 +37,9 @@ function validarPlano(caso) {
   for (const [letra, hab] of Object.entries(caso.habitaciones)) {
     if (!hab.nombre || !hab.articulo) {
       errores.push(error('habitacion-incompleta', `A la habitación «${letra}» le falta nombre o artículo.`));
+    }
+    if (!SUELOS.includes(hab.suelo)) {
+      errores.push(error('suelo-invalido', `La habitación «${letra}» tiene suelo «${hab.suelo}».`));
     }
   }
   return errores;
@@ -67,11 +73,24 @@ function validarPersonajes(caso) {
     errores.push(error('numero-de-personajes', `Hay ${caso.personajes.length} personajes y el plano es de ${n}.`));
   }
   const ids = new Set();
+  const iniciales = new Set();
+  const nombres = new Set();
   for (const p of caso.personajes) {
     if (ids.has(p.id)) errores.push(error('personaje-repetido', `«${p.id}» está repetido.`));
     ids.add(p.id);
+    if (nombres.has(p.nombre)) errores.push(error('nombre-repetido', `Hay dos personajes llamados «${p.nombre}».`));
+    nombres.add(p.nombre);
     if (p.genero !== 'f' && p.genero !== 'm') {
       errores.push(error('genero-invalido', `${p.id} tiene género «${p.genero}».`));
+    }
+    if (typeof p.iniciales !== 'string' || !/^[A-ZÁÉÍÓÚÑ]{1,2}$/.test(p.iniciales)) {
+      errores.push(error('iniciales-invalidas', `${p.id} tiene iniciales «${p.iniciales}».`));
+    } else if (iniciales.has(p.iniciales)) {
+      errores.push(error('iniciales-repetidas', `Las iniciales «${p.iniciales}» están repetidas.`));
+    }
+    iniciales.add(p.iniciales);
+    if (typeof p.color !== 'string' || !/^#[0-9a-f]{6}$/i.test(p.color)) {
+      errores.push(error('color-invalido', `${p.id} tiene color «${p.color}».`));
     }
   }
   if (!ids.has(caso.victima)) {
@@ -84,11 +103,16 @@ function validarPersonajes(caso) {
 function problemaDePista(pista, caso, ids) {
   const n = caso.plano.length;
   const hayObjeto = (tipo) => caso.objetos.some((o) => o.tipo === tipo);
-  const otraValida = () => ids.has(pista.otra) && pista.otra !== pista.persona;
+
+  if (pista.negada !== undefined && typeof pista.negada !== 'boolean') {
+    return `«negada» vale «${pista.negada}»`;
+  }
+  if (TIPOS_CON_OTRA.includes(pista.tipo) && (!ids.has(pista.otra) || pista.otra === pista.persona)) {
+    return `otra persona «${pista.otra}»`;
+  }
 
   switch (pista.tipo) {
     case 'en-habitacion':
-    case 'no-en-habitacion':
       return caso.habitaciones[pista.habitacion] ? null : `habitación «${pista.habitacion}»`;
     case 'en-linea':
       return ['fila', 'columna'].includes(pista.eje) &&
@@ -101,13 +125,8 @@ function problemaDePista(pista, caso, ids) {
         : `no se puede estar sobre «${pista.objeto}» en este plano`;
     case 'junto-a-objeto':
       return OBJETOS[pista.objeto] && hayObjeto(pista.objeto) ? null : `objeto «${pista.objeto}»`;
-    case 'junto-a-persona':
-    case 'a-solas-con':
-      return otraValida() ? null : `otra persona «${pista.otra}»`;
     case 'direccion':
-      return otraValida() && DIRECCIONES.includes(pista.direccion)
-        ? null
-        : `dirección «${pista.direccion}» respecto a «${pista.otra}»`;
+      return DIRECCIONES.includes(pista.direccion) ? null : `dirección «${pista.direccion}»`;
     default:
       return null;
   }
@@ -131,6 +150,38 @@ function validarPistas(caso) {
     if (problema) {
       errores.push(error('pista-dato-invalido', `Pista de ${pista.persona} (${pista.tipo}): ${problema}.`));
     }
+  }
+  return errores;
+}
+
+function problemaDeGeneral(g, caso) {
+  const enRango = (maximo) => Number.isInteger(g.cantidad) && g.cantidad >= 0 && g.cantidad <= maximo;
+  const personas = caso.personajes.length;
+  switch (g.tipo) {
+    case 'personas-en-habitacion':
+      if (!caso.habitaciones[g.habitacion]) return `habitación «${g.habitacion}»`;
+      return enRango(personas) ? null : `cantidad ${g.cantidad}`;
+    case 'personas-sobre-objeto':
+      if (!OBJETOS[g.objeto]?.ocupable || !caso.objetos.some((o) => o.tipo === g.objeto)) {
+        return `no se puede estar sobre «${g.objeto}» en este plano`;
+      }
+      return enRango(personas) ? null : `cantidad ${g.cantidad}`;
+    case 'habitaciones-vacias':
+      return enRango(Object.keys(caso.habitaciones).length) ? null : `cantidad ${g.cantidad}`;
+    default:
+      return null;
+  }
+}
+
+function validarGenerales(caso) {
+  const errores = [];
+  for (const g of caso.generales ?? []) {
+    if (!TIPOS_GENERALES.includes(g.tipo)) {
+      errores.push(error('general-tipo-desconocido', `Tipo general «${g.tipo}».`));
+      continue;
+    }
+    const problema = problemaDeGeneral(g, caso);
+    if (problema) errores.push(error('general-dato-invalido', `Pista general ${g.tipo}: ${problema}.`));
   }
   return errores;
 }
@@ -175,6 +226,7 @@ export function validarCaso(caso) {
     ...validarObjetos(caso),
     ...validarPersonajes(caso),
     ...validarPistas(caso),
+    ...validarGenerales(caso),
     ...validarSolucion(caso),
   ];
 }

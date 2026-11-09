@@ -1,52 +1,59 @@
-// Dibuja el plano de un caso: habitaciones en colores, paredes y objetos.
+// Dibuja el tablero de un caso: suelos, paredes, objetos y nombres de habitación.
 import { paredes } from '../logica/paredes.js';
+import { posicionEtiqueta } from '../logica/etiquetas.js';
 import { OBJETOS } from '../logica/objetos.js';
+import { DIBUJOS } from './dibujos.js';
 
-const COLORES = [
-  '#f3d9b1', '#cfe3c8', '#c9dcef', '#ecc9d6',
-  '#e2d5f0', '#f5e7a8', '#c8e6e1', '#e9cfc0', '#d9d9d9',
-];
+function crearCasilla(caso, fila, columna, objetos) {
+  const letra = caso.plano[fila][columna];
+  const habitacion = caso.habitaciones[letra];
+  const casilla = document.createElement('div');
+  casilla.className = `casilla suelo-${habitacion.suelo}`;
+  casilla.dataset.fila = fila;
+  casilla.dataset.columna = columna;
+  casilla.style.gridRow = fila + 1;
+  casilla.style.gridColumn = columna + 1;
 
-export function coloresDeHabitaciones(caso) {
-  return Object.fromEntries(
-    Object.keys(caso.habitaciones).map((letra, i) => [letra, COLORES[i % COLORES.length]]),
-  );
+  for (const [lado, hay] of Object.entries(paredes(caso.plano, fila, columna))) {
+    if (hay) casilla.classList.add(`pared-${lado}`);
+  }
+
+  const tipo = objetos.get(`${fila},${columna}`);
+  if (tipo) {
+    casilla.innerHTML = DIBUJOS[tipo]; // dibujos propios y fijos, sin datos del usuario
+    casilla.title = `${OBJETOS[tipo].nombre} (${habitacion.nombre})`;
+  } else {
+    casilla.title = habitacion.nombre;
+  }
+  return casilla;
+}
+
+function crearEtiqueta(caso, letra) {
+  const { fila, desde, hasta } = posicionEtiqueta(caso.plano, letra);
+  const etiqueta = document.createElement('span');
+  etiqueta.className = 'etiqueta-habitacion';
+  etiqueta.textContent = caso.habitaciones[letra].nombre;
+  etiqueta.style.gridRow = fila + 1;
+  etiqueta.style.gridColumn = `${desde + 1} / ${hasta + 2}`;
+  return etiqueta;
 }
 
 export function crearPlano(caso) {
   const n = caso.plano.length;
-  const colores = coloresDeHabitaciones(caso);
   const objetos = new Map(caso.objetos.map((o) => [`${o.fila},${o.columna}`, o.tipo]));
 
-  const plano = document.createElement('div');
-  plano.className = 'plano';
-  plano.style.gridTemplateColumns = `repeat(${n}, var(--casilla))`;
-  plano.setAttribute('role', 'grid');
-  plano.setAttribute('aria-label', `Plano de ${n}×${n}`);
+  const tablero = document.createElement('div');
+  tablero.className = 'tablero';
+  tablero.setAttribute('role', 'grid');
+  tablero.setAttribute('aria-label', `Plano de ${n}×${n}`);
 
   for (let fila = 0; fila < n; fila++) {
     for (let columna = 0; columna < n; columna++) {
-      const letra = caso.plano[fila][columna];
-      const casilla = document.createElement('div');
-      casilla.className = 'casilla';
-      casilla.dataset.fila = fila;
-      casilla.dataset.columna = columna;
-      casilla.style.background = colores[letra];
-
-      for (const [lado, hay] of Object.entries(paredes(caso.plano, fila, columna))) {
-        if (hay) casilla.classList.add(`pared-${lado}`);
-      }
-
-      const habitacion = caso.habitaciones[letra].nombre;
-      const tipo = objetos.get(`${fila},${columna}`);
-      if (tipo) {
-        casilla.textContent = OBJETOS[tipo].emoji;
-        casilla.title = `${OBJETOS[tipo].nombre} (${habitacion})`;
-      } else {
-        casilla.title = habitacion;
-      }
-      plano.append(casilla);
+      tablero.append(crearCasilla(caso, fila, columna, objetos));
     }
   }
-  return plano;
+  for (const letra of Object.keys(caso.habitaciones)) {
+    tablero.append(crearEtiqueta(caso, letra));
+  }
+  return tablero;
 }

@@ -1,47 +1,60 @@
-// Catálogo de objetos que pueden aparecer en un plano.
+// Catálogos fijos del juego: objetos, tipos de pista, suelos y límites.
+//
+// Objetos:
 // - ocupable: si una persona puede estar en esa casilla.
-// - sobre: cómo se dice que alguien está encima, en femenino y masculino
-//   (solo en los ocupables).
+// - postura: cómo se dice que alguien está encima (f, m y femenino plural para
+//   «personas»). null si no hay postura («sobre una alfombra»).
+// - preposicion: «en» (sentada en una silla) o «sobre» (sobre una alfombra).
 export const OBJETOS = {
   silla: {
     nombre: 'silla',
     articulo: 'una',
     ocupable: true,
-    sobre: { f: 'sentada en', m: 'sentado en' },
-    emoji: '🪑',
+    postura: { f: 'sentada', m: 'sentado', fp: 'sentadas' },
+    preposicion: 'en',
   },
   cama: {
     nombre: 'cama',
     articulo: 'una',
     ocupable: true,
-    sobre: { f: 'tumbada en', m: 'tumbado en' },
-    emoji: '🛏️',
+    postura: { f: 'tumbada', m: 'tumbado', fp: 'tumbadas' },
+    preposicion: 'en',
   },
   alfombra: {
     nombre: 'alfombra',
     articulo: 'una',
     ocupable: true,
-    sobre: { f: 'sobre', m: 'sobre' },
-    emoji: '🧶',
+    postura: null,
+    preposicion: 'sobre',
   },
-  planta: { nombre: 'planta', articulo: 'una', ocupable: false, emoji: '🪴' },
-  mesa: { nombre: 'mesa', articulo: 'una', ocupable: false, emoji: '🍽️' },
-  estanteria: { nombre: 'estantería', articulo: 'una', ocupable: false, emoji: '📚' },
-  sofa: { nombre: 'sofá', articulo: 'un', ocupable: false, emoji: '🛋️' },
+  planta: { nombre: 'planta', articulo: 'una', ocupable: false },
+  mesa: { nombre: 'mesa', articulo: 'una', ocupable: false },
+  estanteria: { nombre: 'estantería', articulo: 'una', ocupable: false },
+  sofa: { nombre: 'sofá', articulo: 'un', ocupable: false },
 };
 
+// Pistas de un sospechoso. Cualquiera admite `negada: true`.
 export const TIPOS_DE_PISTA = [
   'en-habitacion',
   'en-linea',
   'sobre-objeto',
-  'no-en-habitacion',
   'junto-a-objeto',
-  'junto-a-persona',
+  'solo',
+  'misma-habitacion',
   'a-solas-con',
+  'en-diagonal',
   'direccion',
 ];
 
+// Tipos que relacionan a la persona con otra (campo `otra`).
+export const TIPOS_CON_OTRA = ['misma-habitacion', 'a-solas-con', 'en-diagonal', 'direccion'];
+
+// Pistas generales, sobre todo el caso.
+export const TIPOS_GENERALES = ['personas-en-habitacion', 'personas-sobre-objeto', 'habitaciones-vacias'];
+
 export const DIRECCIONES = ['norte', 'sur', 'este', 'oeste'];
+
+export const SUELOS = ['madera', 'baldosa', 'cesped', 'moqueta', 'piedra'];
 
 export const TAMANO_MINIMO = 5;
 export const TAMANO_MAXIMO = 9;

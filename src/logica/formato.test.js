@@ -11,12 +11,14 @@ const codigos = (caso) => validarCaso(caso).map((e) => e.codigo);
 function casoDeTamano(n) {
   const caso = casoDePrueba();
   caso.plano = Array.from({ length: n }, () => 'A'.repeat(n));
-  caso.habitaciones = { A: { nombre: 'sala', articulo: 'la' } };
+  caso.habitaciones = { A: { nombre: 'sala', articulo: 'la', suelo: 'madera' } };
   caso.objetos = [];
   caso.personajes = Array.from({ length: n }, (_, i) => ({
     id: `p${i}`,
     nombre: `P${i}`,
     genero: 'f',
+    iniciales: String.fromCharCode(65 + i), // A, B, C…
+    color: '#888888',
   }));
   caso.victima = 'p0';
   caso.pistas = [];
@@ -45,6 +47,79 @@ describe('validarCaso · casos normales', () => {
     const caso = casoDePrueba();
     assert.deepEqual(caso.solucion.lola, [0, 0]); // la silla
     assert.deepEqual(validarCaso(caso), []);
+  });
+});
+
+describe('validarCaso · tipos de pista nuevos válidos', () => {
+  it('acepta solo, misma habitación, a solas, en diagonal y una pista negada', () => {
+    const caso = casoDePrueba();
+    caso.pistas.push(
+      { persona: 'helen', tipo: 'solo' },
+      { persona: 'lola', tipo: 'misma-habitacion', otra: 'carles', negada: true },
+      { persona: 'carles', tipo: 'a-solas-con', otra: 'calikos', negada: true },
+      { persona: 'helen', tipo: 'en-diagonal', otra: 'ingrid' },
+    );
+    assert.deepEqual(validarCaso(caso), []);
+  });
+
+  it('un caso sin pistas generales también es válido', () => {
+    const caso = casoDePrueba();
+    delete caso.generales;
+    assert.deepEqual(validarCaso(caso), []);
+  });
+});
+
+describe('validarCaso · pistas generales', () => {
+  it('acepta los 3 tipos con datos correctos', () => {
+    const caso = casoDePrueba();
+    caso.generales = [
+      { tipo: 'personas-en-habitacion', habitacion: 'J', cantidad: 2 },
+      { tipo: 'personas-sobre-objeto', objeto: 'silla', cantidad: 1 },
+      { tipo: 'habitaciones-vacias', cantidad: 0 },
+    ];
+    assert.deepEqual(validarCaso(caso), []);
+  });
+
+  it('extremo: cantidad 0 y cantidad igual al tamaño del plano son válidas', () => {
+    const caso = casoDePrueba();
+    caso.generales = [
+      { tipo: 'personas-en-habitacion', habitacion: 'C', cantidad: 0 },
+      { tipo: 'personas-en-habitacion', habitacion: 'J', cantidad: 5 },
+    ];
+    assert.deepEqual(validarCaso(caso), []);
+  });
+
+  it('tipo general desconocido', () => {
+    const caso = casoDePrueba();
+    caso.generales.push({ tipo: 'eclipse' });
+    assert.ok(codigos(caso).includes('general-tipo-desconocido'));
+  });
+
+  it('cantidad negativa, decimal o mayor que el número de personas', () => {
+    for (const cantidad of [-1, 1.5, 6]) {
+      const caso = casoDePrueba();
+      caso.generales.push({ tipo: 'personas-en-habitacion', habitacion: 'C', cantidad });
+      assert.ok(codigos(caso).includes('general-dato-invalido'), String(cantidad));
+    }
+  });
+
+  it('más habitaciones vacías de las que hay', () => {
+    const caso = casoDePrueba();
+    caso.generales.push({ tipo: 'habitaciones-vacias', cantidad: 5 }); // solo hay 4
+    assert.ok(codigos(caso).includes('general-dato-invalido'));
+  });
+
+  it('habitación que no existe u objeto bloqueante o ausente', () => {
+    const malos = [
+      { tipo: 'personas-en-habitacion', habitacion: 'X', cantidad: 1 },
+      { tipo: 'personas-sobre-objeto', objeto: 'planta', cantidad: 1 },
+      { tipo: 'personas-sobre-objeto', objeto: 'cama', cantidad: 1 }, // no hay cama en este plano
+    ];
+    for (const g of malos) {
+      const caso = casoDePrueba();
+      caso.generales.push(g);
+      assert.ok(codigos(caso).includes('general-dato-invalido'), JSON.stringify(g));
+    }
   });
 });
 
@@ -137,6 +212,12 @@ describe('validarCaso · casos erróneos: personajes y víctima', () => {
     assert.ok(codigos(caso).includes('numero-de-personajes'));
   });
 
+  it('dos personajes con el mismo nombre (por ejemplo, las dos Celias)', () => {
+    const caso = casoDePrueba();
+    caso.personajes[1].nombre = 'Lola';
+    assert.ok(codigos(caso).includes('nombre-repetido'));
+  });
+
   it('dos personajes con el mismo id', () => {
     const caso = casoDePrueba();
     caso.personajes[1].id = 'lola';
@@ -181,9 +262,25 @@ describe('validarCaso · casos erróneos: pistas', () => {
     assert.ok(codigos(caso).includes('pista-dato-invalido'));
   });
 
-  it('pista que relaciona a una persona consigo misma', () => {
+  it('pista que relaciona a una persona consigo misma (misma habitación, a solas, diagonal)', () => {
+    for (const tipo of ['misma-habitacion', 'a-solas-con', 'en-diagonal']) {
+      const caso = casoDePrueba();
+      caso.pistas.push({ persona: 'lola', tipo, otra: 'lola' });
+      assert.ok(codigos(caso).includes('pista-dato-invalido'), tipo);
+    }
+  });
+
+  it('«junto a otra persona» y «no-en-habitacion» ya no son tipos válidos', () => {
+    for (const tipo of ['junto-a-persona', 'no-en-habitacion']) {
+      const caso = casoDePrueba();
+      caso.pistas.push({ persona: 'lola', tipo, otra: 'carles', habitacion: 'C' });
+      assert.ok(codigos(caso).includes('pista-tipo-desconocido'), tipo);
+    }
+  });
+
+  it('«negada» tiene que ser true o false', () => {
     const caso = casoDePrueba();
-    caso.pistas.push({ persona: 'lola', tipo: 'junto-a-persona', otra: 'lola' });
+    caso.pistas.push({ persona: 'lola', tipo: 'solo', negada: 'sí' });
     assert.ok(codigos(caso).includes('pista-dato-invalido'));
   });
 
@@ -236,5 +333,70 @@ describe('validarCaso · casos erróneos: solución', () => {
     caso.solucion.carles = [1, 3];
     caso.solucion.ingrid = [4, 2];
     assert.ok(codigos(caso).includes('solucion-sobre-bloqueante'));
+  });
+});
+
+describe('validarCaso · suelo de las habitaciones (Fase 2)', () => {
+  it('acepta los 5 suelos del catálogo', () => {
+    for (const suelo of ['madera', 'baldosa', 'cesped', 'moqueta', 'piedra']) {
+      const caso = casoDePrueba();
+      caso.habitaciones.C.suelo = suelo;
+      assert.deepEqual(validarCaso(caso), [], suelo);
+    }
+  });
+
+  it('habitación sin suelo', () => {
+    const caso = casoDePrueba();
+    delete caso.habitaciones.C.suelo;
+    assert.ok(codigos(caso).includes('suelo-invalido'));
+  });
+
+  it('suelo que no está en el catálogo', () => {
+    const caso = casoDePrueba();
+    caso.habitaciones.C.suelo = 'lava';
+    assert.ok(codigos(caso).includes('suelo-invalido'));
+  });
+});
+
+describe('validarCaso · iniciales y color de los personajes (Fase 2)', () => {
+  it('acepta iniciales de 1 y de 2 letras', () => {
+    const caso = casoDePrueba();
+    assert.equal(caso.personajes.find((p) => p.id === 'helen').iniciales, 'H');
+    assert.equal(caso.personajes.find((p) => p.id === 'lola').iniciales, 'LB');
+    assert.deepEqual(validarCaso(caso), []);
+  });
+
+  it('personaje sin iniciales', () => {
+    const caso = casoDePrueba();
+    delete caso.personajes[0].iniciales;
+    assert.ok(codigos(caso).includes('iniciales-invalidas'));
+  });
+
+  it('iniciales de 3 letras', () => {
+    const caso = casoDePrueba();
+    caso.personajes[0].iniciales = 'LOL';
+    assert.ok(codigos(caso).includes('iniciales-invalidas'));
+  });
+
+  it('iniciales en minúscula o con números', () => {
+    for (const mal of ['lb', 'L1', '']) {
+      const caso = casoDePrueba();
+      caso.personajes[0].iniciales = mal;
+      assert.ok(codigos(caso).includes('iniciales-invalidas'), mal);
+    }
+  });
+
+  it('dos personajes con las mismas iniciales en el mismo caso', () => {
+    const caso = casoDePrueba();
+    caso.personajes[1].iniciales = 'LB';
+    assert.ok(codigos(caso).includes('iniciales-repetidas'));
+  });
+
+  it('personaje sin color o con un color que no es #rrggbb', () => {
+    for (const mal of [undefined, 'rojo', '#fff']) {
+      const caso = casoDePrueba();
+      caso.personajes[0].color = mal;
+      assert.ok(codigos(caso).includes('color-invalido'), String(mal));
+    }
   });
 });
