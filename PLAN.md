@@ -6,27 +6,32 @@ Arranque de la app: `python3 -m http.server 8000` y abrir http://localhost:8000.
 
 ## Límites conocidos
 
-- **Tamaño máximo 6×6.** El resolvedor es por fuerza bruta: 6!·6! ≈ 518.000 combinaciones. Con 8×8 serían ~1.600 millones. No se aceptan planos mayores sin cambiar de resolvedor.
+- **Tamaño máximo 9×9.** Probar todas las combinaciones no es viable (9!·9! ≈ 130.000 millones), así que el resolvedor usa vuelta atrás: coloca fila a fila y abandona un camino en cuanto una regla o pista falla. Además se para en cuanto encuentra 2 soluciones. Si un 9×9 tarda demasiado, se refuerza la poda antes de añadir casos.
+- **Un 9×9 en el móvil** tiene casillas pequeñas. Se revisa en la Fase 6.
 - **Solución única no significa caso bien diseñado.** El resolvedor garantiza que la solución es única, no que se pueda deducir sin tantear. La dificultad se controla con el tamaño y la mezcla de pistas.
 - **Hasta la Fase 3, el caso 1 no está validado.** Si el resolvedor encuentra más de una solución, se corrige en esa fase.
+
+## Antes de la Fase 1
+
+- [x] La carpeta es un repositorio git conectado a `ingridalbert/murdoku`.
+- [ ] Ingrid da la lista de apodos (al menos 9) con su género, y sus amigos están de acuerdo.
 
 ## Fase 1 · Preparar el proyecto y ver el caso 1
 
 **Objetivo:** abrir la app y ver el plano del caso 1 con sus pistas, todavía sin poder jugar. Menos de una hora.
 
 **Tareas:**
-- [ ] La carpeta es un repositorio git (clon de `ingridalbert/murdoku`).
 - [ ] `package.json` con `"type": "module"` y scripts `test` (`node --test`), `test:e2e` (`playwright test`) y `lint` (`eslint .`).
 - [ ] Instalar `@playwright/test` (y sus navegadores) y ESLint. Configurar `playwright.config.js` con `webServer` que arranca `python3 -m http.server 8000`.
 - [ ] Quitar `GEMINI_API_KEY` de `.env.example`.
-- [ ] Formato del caso como módulo JS (`export default {...}`), con `id`, `version`, habitaciones y objetos con su artículo, objetos bloqueantes u ocupables, personas, pistas estructuradas y solución.
+- [ ] Formato del caso como módulo JS (`export default {...}`), con `id`, `version`, habitaciones y objetos con su artículo, objetos bloqueantes u ocupables, personajes (apodo y género), pistas estructuradas y solución.
 - [ ] Generador de texto de las pistas a partir de su estructura (los 8 tipos).
-- [ ] Caso 1 (4×4, fácil).
+- [ ] Caso 1 (5×5, de prueba), con apodos de la lista que da Ingrid.
 - [ ] `index.html`, estilos y módulo que dibuja el plano: habitaciones en colores, paredes marcadas, objetos y lista de pistas.
 
 **Pruebas:**
-- Unitarias: el caso 1 está bien formado (4×4, cada casilla con su habitación, 4 personas, víctima sin pistas) y cada tipo de pista genera el texto esperado.
-- E2E: la página muestra «Murdoku», 16 casillas y la lista de pistas.
+- Unitarias: el caso 1 está bien formado (5×5, cada casilla con su habitación, 5 personas, víctima sin pistas) y cada tipo de pista genera el texto esperado, en masculino y en femenino.
+- E2E: la página muestra «Murdoku», 25 casillas y la lista de pistas.
 - `npm run lint` sin avisos.
 
 **Hecho cuando:** al abrir http://localhost:8000 se ven el plano y las pistas del caso 1, y las tres órdenes pasan.
@@ -57,7 +62,7 @@ Arranque de la app: `python3 -m http.server 8000` y abrir http://localhost:8000.
 **Objetivo:** garantizar que cada caso tiene solución única y ayudar al jugador cuando se atasca.
 
 **Tareas:**
-- [ ] Resolvedor por fuerza bruta (máximo 6×6) que devuelve todas las soluciones.
+- [ ] Resolvedor con vuelta atrás (hasta 9×9) que cuenta soluciones y se para en la segunda.
 - [ ] Script `node scripts/validate-case.js <id>`: número de soluciones (dos de ellas si hay varias), pistas que sobran y mezcla de dificultad de las pistas.
 - [ ] Si el caso 1 no tiene solución única, corregirlo.
 - [ ] Botón «Pista»: señala primero una regla incumplida y, si no hay, una pista incumplida. Si nada falla pero falta gente: «Ninguna pista falla; te falta colocar a alguien».
@@ -65,6 +70,7 @@ Arranque de la app: `python3 -m http.server 8000` y abrir http://localhost:8000.
 **Pruebas:**
 - El resolvedor encuentra 0, 1 y varias soluciones en casos de prueba pequeños.
 - Prueba que recorre **todos** los casos del repositorio: exactamente 1 solución, igual a la guardada.
+- Rendimiento: un caso de prueba de 9×9 se resuelve en menos de 5 segundos.
 - E2E: colocar a alguien mal y pulsar «Pista» resalta la pista que no se cumple.
 
 **Hecho cuando:** el caso 1 pasa el validador, «Pista» funciona en la app y las pruebas pasan.
@@ -75,14 +81,15 @@ Arranque de la app: `python3 -m http.server 8000` y abrir http://localhost:8000.
 
 **Tareas:**
 - [ ] Pantalla de menú con los casos ordenados por dificultad.
-- [ ] Unos 6 casos: 2 fáciles (4×4, pistas fáciles), 2 medios (5×5, con pistas medias) y 2 difíciles (6×6, con pistas difíciles), todos validados con el script.
-- [ ] Nombres, textos y personajes propios.
+- [ ] 8 casos nuevos, dos de cada tamaño (6×6, 7×7, 8×8 y 9×9), con más pistas medias y difíciles cuanto mayor es el plano. Todos validados con el script.
+- [ ] Personajes con los apodos de la lista; textos y planos propios.
+- [ ] Si no cabe en una sesión, se parte en 6×6–7×7 y 8×8–9×9, con un commit cada parte.
 
 **Pruebas:**
 - La prueba de todos los casos (Fase 3) pasa con los nuevos.
 - E2E: abrir un caso desde el menú y volver.
 
-**Hecho cuando:** desde el menú se entra en un caso de cada dificultad y se puede resolver. La parte de crear casos se puede repetir más adelante («genera 3 casos nuevos de dificultad media»).
+**Hecho cuando:** el menú muestra los 9 casos, se entra en uno de cada tamaño y se puede resolver. La parte de crear casos se puede repetir más adelante («genera 2 casos nuevos de 7×7»).
 
 ## Fase 5 · Guardar progreso
 
@@ -111,7 +118,7 @@ Arranque de la app: `python3 -m http.server 8000` y abrir http://localhost:8000.
 **Pruebas:**
 - Unitarias de deshacer, reiniciar y cronómetro.
 - E2E: tachar una casilla, deshacer y comprobar que desaparece.
-- E2E con viewport móvil: colocar a una persona y comprobarlo.
+- E2E con viewport móvil: en un 9×9, colocar a una persona y comprobarlo.
 
 **Hecho cuando:** las comodidades funcionan, se guardan con el progreso y las pruebas pasan.
 

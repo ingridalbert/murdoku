@@ -4,10 +4,10 @@
 Un juego de lógica en el navegador que mezcla sudoku y misterio. Hay un plano en cuadrícula dividido en habitaciones y una lista de pistas. El jugador coloca a los sospechosos y a la víctima para descubrir quién es el asesino. Los casos, los textos y el diseño son propios.
 
 ## Para quién
-Gente a la que le gustan los puzles lógicos (sudoku, juegos de detectives) y quiere resolver un caso corto, de 5 a 20 minutos, sin registrarse.
+Ingrid y su grupo de amigos, que aparecen como personajes, y en general gente a la que le gustan los puzles lógicos (sudoku, juegos de detectives) y quiere resolver un caso de 5 a 40 minutos sin registrarse.
 
 ## Reglas del juego
-- El plano tiene N×N casillas (4×4 fácil, 5×5 media, 6×6 difícil) repartidas en habitaciones.
+- El plano tiene N×N casillas, de 5×5 a 9×9, repartidas en habitaciones. Cuanto más grande, más difícil.
 - Hay dos tipos de objetos:
   - **Bloqueantes** (mesa, planta, estantería): nadie puede ocupar esa casilla.
   - **Ocupables** (silla, alfombra, cama): se puede estar encima.
@@ -30,7 +30,7 @@ Gente a la que le gustan los puzles lógicos (sudoku, juegos de detectives) y qu
 | Difícil | A solas con otra persona | «Diego estaba a solas con Ana.» |
 | Difícil | Dirección respecto a otra persona | «Ana estaba más al norte que Diego.» |
 
-La dificultad de un caso depende del tamaño del plano y de la mezcla de pistas. Cada habitación y cada objeto guarda su artículo («la cocina», «un sofá»), para que el texto de las pistas, que se genera a partir de su estructura, sea correcto.
+La dificultad de un caso depende del tamaño del plano y de la mezcla de pistas. Cada habitación y cada objeto guarda su artículo («la cocina», «un sofá») y cada personaje su género («sentado» o «sentada»), para que el texto de las pistas, que se genera a partir de su estructura, sea correcto.
 
 ## Funciones
 - Menú de casos ordenados por dificultad, con la marca de resuelto.
@@ -41,14 +41,18 @@ La dificultad de un caso depende del tamaño del plano y de la mezcla de pistas.
 - Guardar el progreso de cada caso en el navegador (colocación, tachadas y cronómetro).
 - Deshacer, reiniciar caso y cronómetro. El cronómetro se pausa con la pestaña oculta y se para al resolver.
 
+## Personajes
+Los personajes son amigos de Ingrid, identificados **solo por su apodo**, con su género gramatical. Sin apellidos, fotos ni otros datos que permitan reconocerlos fuera del grupo. El repositorio es público: Ingrid da la lista de apodos y se asegura de que sus amigos están de acuerdo, porque alguno saldrá como asesino o víctima. Los apodos se reutilizan entre casos.
+
 ## Cómo se crean los casos
-Los escribe el agente (Claude) como módulos de datos dentro del repositorio: plano, objetos, personas, pistas y solución. Un resolvedor comprueba que cada caso tiene exactamente una solución y que esta coincide con la guardada. Para tener más casos, se pide al agente: «genera 3 casos nuevos de dificultad media». Si un caso no pasa el validador, no entra.
+Los escribe el agente (Claude) como módulos de datos dentro del repositorio: plano, objetos, personas, pistas y solución. Un resolvedor comprueba que cada caso tiene exactamente una solución y que esta coincide con la guardada. Piloto: 9 casos, uno de prueba de 5×5 y dos de cada tamaño de 6×6 a 9×9. Si gustan, se pide al agente: «genera 2 casos nuevos de 7×7». Si un caso no pasa el validador, no entra.
 
 ## Fuera de alcance
 - Cuentas de usuario, servidor, base de datos, ranking o multijugador.
 - IA dentro de la app y generación de casos en el navegador.
 - Ventanas, puertas y reglas especiales por escenario (por ahora).
 - Copiar casos, textos, personajes o ilustraciones de juegos o libros existentes.
+- Planos de más de 9×9.
 - App móvil nativa. La web debe poder usarse en el móvil, pero no es prioritaria.
 - Publicar la app: es producción y necesita permiso expreso.
 
@@ -58,7 +62,7 @@ Los escribe el agente (Claude) como módulos de datos dentro del repositorio: pl
 - Pruebas unitarias con `node --test`, e2e con Playwright en `e2e/` y linter ESLint.
 
 ## Datos y claves
-- Datos: los casos (archivos en el repositorio) y el progreso del jugador (`localStorage`). No hay datos personales.
+- Datos: los casos (archivos en el repositorio) y el progreso del jugador (`localStorage`). Los únicos datos de personas son apodos, como se explica en «Personajes». No hay base de datos.
 - Claves: ninguna.
 
 ## Cómo se arranca
@@ -66,5 +70,5 @@ Los escribe el agente (Claude) como módulos de datos dentro del repositorio: pl
 
 ## Cómo se prueba
 - `npm test` (lógica), `npm run test:e2e` (navegador) y `npm run lint`.
-- **Caso concreto:** en el caso 1 (4×4, fácil), al colocar a todos según la solución y pulsar «Comprobar», aparece «¡Resuelto! El asesino es [nombre]». Si se mueve a una persona y se pulsa «Comprobar», aparece «Todavía no», y «Pista» señala al menos una pista o regla que no se cumple.
+- **Caso concreto:** en el caso 1 (5×5, de prueba), al colocar a todos según la solución y pulsar «Comprobar», aparece «¡Resuelto! El asesino es [nombre]». Si se mueve a una persona y se pulsa «Comprobar», aparece «Todavía no», y «Pista» señala al menos una pista o regla que no se cumple.
 - **Prueba clave:** para cada caso del repositorio, el resolvedor encuentra exactamente 1 solución, igual a la guardada.
